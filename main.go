@@ -54,7 +54,7 @@ func run(connector string) (err error) {
 	go listenForAddresses(id, connector)
 	go func() {
 		time.Sleep(1 * time.Second)
-		requestAddresses(id, connector)
+		sendAddresses(id, connector)
 	}()
 
 	for {
@@ -102,27 +102,17 @@ func listenForAddresses(id, connector string) (err error) {
 			log.Error(err)
 			continue
 		}
-		log.Debugf("got msg: %+v", msg)
+
 		if msg.ID != "" && msg.ID != id {
-			err = sendAddresses(msg.ID)
+			log.Debugf("got msg: %+v", msg)
+			err = sendAddresses(msg.ID, msg.ID)
 			if err != nil {
 				panic(err)
 			}
-			requestAddresses(id, connector)
 		}
 	}
 }
 
-func requestAddresses(id, connector string) (err error) {
-	b, _ := json.Marshal(Message{
-		ID: id,
-	})
-	err = postData(connector, b)
-	if err != nil {
-		panic(err)
-	}
-	return
-}
 func listenForNeeds(connector string) (err error) {
 	for {
 		var resp *http.Response
@@ -144,28 +134,28 @@ func listenForNeeds(connector string) (err error) {
 			continue
 		}
 		log.Debugf("got addresses: %+v", addresses)
-
 	}
 }
 
-func sendAddresses(id string) (err error) {
+func sendAddresses(id, sendto string) (err error) {
 	addresses, err := getAddresses()
 	if err != nil {
 		return
 	}
 	b, err := json.Marshal(Message{
+		ID:        id,
 		Addresses: addresses,
 	})
 	if err != nil {
 		return
 	}
-	err = postData(id, b)
+	err = postData(sendto, b)
 	return
 }
 
-func postData(connector string, data []byte) (err error) {
+func postData(sendto string, data []byte) (err error) {
 	body := bytes.NewReader(data)
-	req, err := http.NewRequest("POST", "https://duct.schollz.com/"+connector+"?pubsub=true", body)
+	req, err := http.NewRequest("POST", "https://duct.schollz.com/"+sendto+"?pubsub=true", body)
 	if err != nil {
 		return
 	}
