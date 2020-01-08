@@ -114,10 +114,21 @@ func listenForAddresses(id, connector string) (err error) {
 			if err != nil {
 				panic(err)
 			}
+			requestAddresses(id, connector)
 		}
 	}
 }
 
+func requestAddresses(id, connector string) (err error) {
+	b, _ := json.Marshal(Message{
+		ID: id,
+	})
+	err = postData(connector, b)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
 func listenForNeeds(connector string) (err error) {
 	for {
 		var resp *http.Response
@@ -190,6 +201,5 @@ func getAddresses() (addresses []string, err error) {
 		return
 	}
 	addresses = iddata.Addresses
-	log.Debugf("got addresses: %+v", addresses)
 	return
 }
