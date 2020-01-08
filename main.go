@@ -105,6 +105,7 @@ func listenForAddresses(id, connector string) (err error) {
 		}
 
 		if msg.ID != "" && msg.ID != id {
+			go connectToAddresses(msg.Addresses)
 			log.Debugf("got msg: %+v", msg)
 			err = sendAddresses(msg.ID, msg.ID)
 			if err != nil {
