@@ -77,6 +77,7 @@ func run(connector string) (err error) {
 			continue
 		}
 		log.Debugf("got addresses: %+v", msg)
+		go connectToAddresses(msg.Addresses)
 
 	}
 	return
@@ -110,31 +111,6 @@ func listenForAddresses(id, connector string) (err error) {
 				panic(err)
 			}
 		}
-	}
-}
-
-func listenForNeeds(connector string) (err error) {
-	for {
-		var resp *http.Response
-		resp, err = http.Get("https://duct.schollz.com/need" + connector)
-		if err != nil {
-			return
-		}
-		var b []byte
-		b, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return
-		}
-		resp.Body.Close()
-
-		var addresses []string
-		err = json.Unmarshal(b, &addresses)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		log.Debugf("got addresses: %+v", addresses)
-		go connectToAddresses(addresses)
 	}
 }
 
@@ -191,6 +167,7 @@ func getAddresses() (addresses []string, err error) {
 
 func connectToAddresses(addresses []string) (err error) {
 	for _, addr := range addresses {
+		log.Debugf("connecting to %s", addr)
 		cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
