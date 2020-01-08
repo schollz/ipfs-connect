@@ -54,13 +54,7 @@ func run(connector string) (err error) {
 	go listenForAddresses(id, connector)
 	go func() {
 		time.Sleep(1 * time.Second)
-		b, _ := json.Marshal(Message{
-			ID: id,
-		})
-		err = postData(connector, b)
-		if err != nil {
-			panic(err)
-		}
+		requestAddresses(id, connector)
 	}()
 
 	for {
