@@ -134,6 +134,7 @@ func listenForNeeds(connector string) (err error) {
 			continue
 		}
 		log.Debugf("got addresses: %+v", addresses)
+		go connectToAddresses(addresses)
 	}
 }
 
@@ -185,5 +186,17 @@ func getAddresses() (addresses []string, err error) {
 		return
 	}
 	addresses = iddata.Addresses
+	return
+}
+
+func connectToAddresses(addresses []string) (err error) {
+	for _, addr := range addresses {
+		cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Debugf("err: %s", err.Error())
+		}
+		log.Debugf("ipfs swarm connect: %s", out)
+	}
 	return
 }
