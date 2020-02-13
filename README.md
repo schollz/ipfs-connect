@@ -17,17 +17,17 @@ $ go get github.com/schollz/ipfs-connect
 Then connect the two computers. On the first computer type:
 
 ```
-$ ipfs-connect
+$ ipfs-connect mycomps
 your id: jkljl88-ji98-449-a0e1-c87a04802922
 add another computer to your swarm by running
 
-ipfs-connect 574ec4957f4129276db46e045e2ddf90
+ipfs-connect mycomps
 ```
 
-And then on the other computer add
+And then on the other computer type
 
 ```
-$ ipfs-connect 574ec4957f4129276db46e045e2ddf90
+$ ipfs-connect mycomps
 ```
 
 And then, voila! Your computers will be swarmed together as long as the IP addresses don't change. Now you can share files via IPFS between two computers without waiting.
