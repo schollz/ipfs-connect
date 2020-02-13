@@ -168,13 +168,17 @@ func getAddresses() (addresses []string, err error) {
 
 func connectToAddresses(addresses []string) (err error) {
 	for _, addr := range addresses {
-		log.Debugf("connecting to %s", addr)
-		cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			log.Debugf("err: %s", err.Error())
-		}
-		log.Debugf("ipfs swarm connect: %s", out)
+		go connectToAddress(addr)
 	}
 	return
+}
+
+func connectToAddress(addr string) {
+	log.Debugf("connecting to %s", addr)
+	cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Debugf("err: %s", err.Error())
+	}
+	log.Debugf("ipfs swarm connect: %s", out)
 }
