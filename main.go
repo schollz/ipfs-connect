@@ -4,34 +4,26 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"time"
 
+	"github.com/denisbrodbeck/machineid"
 	log "github.com/schollz/logger"
 )
 
 func main() {
-	var flagDebug bool
-	var flagConnector string
-	flag.BoolVar(&flagDebug, "debug", false, "debug mode")
-	flag.StringVar(&flagConnector, "connect", "", "connector to listen")
-	flag.Parse()
-
-	if flagDebug {
-		log.SetLevel("debug")
-	} else {
-		log.SetLevel("info")
+	connector := ""
+	if len(os.Args) > 1 {
+		connector = os.Args[1]
 	}
-
-	err := run(flagConnector)
+	err := run(connector)
 	if err != nil {
 		log.Error(err)
 	}
-
 }
 
 type Message struct {
@@ -40,16 +32,19 @@ type Message struct {
 }
 
 func run(connector string) (err error) {
+	id, iderr := machineid.ID()
 	token := make([]byte, 16)
 	rand.Read(token)
-	id := fmt.Sprintf("%x", token)
+	if iderr != nil {
+		id = fmt.Sprintf("%x", token)
+	}
 	if connector == "" {
 		token = make([]byte, 16)
 		rand.Read(token)
 		connector = fmt.Sprintf("%x", token)
 	}
-	fmt.Printf("id: %s\n", id)
-	fmt.Printf("connector: %s\n", connector)
+	fmt.Printf("your id: %s\n", id)
+	fmt.Printf("add another computer to your swarm by running\n\nipfs-connect %s\n\n", connector)
 
 	go listenForAddresses(id, connector)
 	go func() {
