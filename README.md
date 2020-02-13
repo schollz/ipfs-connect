@@ -1,6 +1,20 @@
 # ipfs-connector
 
-Using the IPFSto transfer files between computers can be slow. This makes it faster by lowering the barrier towards adding your peers to a swarm. Simply run the IPFS daemon on two computers and then on one computer just type
+Using the IPFSto transfer files between computers can be slow. This makes it faster by lowering the barrier towards adding your peers to a swarm. 
+
+First run the IPFS daemon on your computers
+
+```
+$ ipfs daemon
+```
+
+Then get `ipfs-connect` using `go`:
+
+```
+$ go get github.com/schollz/ipfs-connect
+```
+
+Then connect the two computers. On the first computer type:
 
 ```
 $ ipfs-connect
