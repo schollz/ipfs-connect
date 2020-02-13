@@ -1,6 +1,6 @@
 # ipfs-connector
 
-Using the IPFSto transfer files between computers can be slow. This makes it faster by lowering the barrier towards adding your peers to a swarm. 
+Using the IPFS to transfer files between computers can be slow because it can take time to locate a path between the two computers on the IPFS network. This makes it faster by lowering the barrier towards making sure your computers are in each other's swarm.
 
 First run the IPFS daemon on your computers
 
