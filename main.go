@@ -76,7 +76,7 @@ func run(connector string) (err error) {
 			log.Error(err)
 			continue
 		}
-		log.Debugf("got addresses: %+v", msg)
+		log.Infof("got addresses: %+v", msg)
 		go connectToAddresses(msg.Addresses)
 
 	}
@@ -106,7 +106,7 @@ func listenForAddresses(id, connector string) (err error) {
 
 		if msg.ID != "" && msg.ID != id {
 			go connectToAddresses(msg.Addresses)
-			log.Debugf("got msg: %+v", msg)
+			log.Infof("got msg: %+v", msg)
 			err = sendAddresses(msg.ID, msg.ID)
 			if err != nil {
 				panic(err)
@@ -174,11 +174,11 @@ func connectToAddresses(addresses []string) (err error) {
 }
 
 func connectToAddress(addr string) {
-	log.Debugf("connecting to %s", addr)
+	log.Infof("connecting to %s", addr)
 	cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Debugf("err: %s", err.Error())
+		log.Infof("err: %s", err.Error())
 	}
-	log.Debugf("ipfs swarm connect: %s", out)
+	log.Infof("ipfs swarm connect: %s", out)
 }
