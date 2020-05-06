@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/denisbrodbeck/machineid"
@@ -43,8 +45,8 @@ func run(connector string) (err error) {
 		rand.Read(token)
 		connector = fmt.Sprintf("%x", token)
 	}
-	fmt.Printf("your id: %s\n", id)
-	fmt.Printf("add another computer to your swarm by running\n\nipfs-connect %s\n\n", connector)
+	// fmt.Printf("your id: %s\n", id)
+	fmt.Printf("add another computer to your swarm by running:\n\nipfs-connect %s\n\n", connector)
 
 	go listenForAddresses(id, connector)
 	go func() {
@@ -71,9 +73,7 @@ func run(connector string) (err error) {
 			log.Error(err)
 			continue
 		}
-		log.Infof("got addresses: %+v", msg)
 		go connectToAddresses(msg.Addresses)
-
 	}
 	return
 }
@@ -101,10 +101,10 @@ func listenForAddresses(id, connector string) (err error) {
 
 		if msg.ID != "" && msg.ID != id {
 			go connectToAddresses(msg.Addresses)
-			log.Infof("got msg: %+v", msg)
 			err = sendAddresses(msg.ID, msg.ID)
 			if err != nil {
-				panic(err)
+				log.Error(err)
+				return
 			}
 		}
 	}
@@ -162,18 +162,41 @@ func getAddresses() (addresses []string, err error) {
 }
 
 func connectToAddresses(addresses []string) (err error) {
+	if len(addresses) == 0 {
+		err = fmt.Errorf("no addresses")
+		return
+	}
+	foo := strings.Split(addresses[0], "/")
+	fmt.Printf("establishing connection to %s...", foo[len(foo)-1])
+	var wg sync.WaitGroup
+	wg.Add(len(addresses))
+	didConnect := false
 	for _, addr := range addresses {
-		go connectToAddress(addr)
+		go func() {
+			connected := connectToAddress(addr)
+			if connected {
+				didConnect = true
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	if didConnect {
+		fmt.Printf("success!\n")
+	} else {
+		fmt.Printf("failed.\n")
 	}
 	return
 }
 
-func connectToAddress(addr string) {
-	log.Infof("connecting to %s", addr)
+func connectToAddress(addr string) (connected bool) {
 	cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Infof("err: %s", err.Error())
+		connected = false
+	} else {
+		connected = bytes.Contains(out, []byte("success"))
 	}
-	log.Infof("ipfs swarm connect: %s", out)
+	return
 }
