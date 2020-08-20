@@ -18,6 +18,7 @@ import (
 )
 
 func main() {
+	log.SetLevel("info")
 	connector := ""
 	if len(os.Args) > 1 {
 		connector = os.Args[1]
@@ -100,6 +101,7 @@ func listenForAddresses(id, connector string) (err error) {
 		}
 
 		if msg.ID != "" && msg.ID != id {
+			log.Debugf("got addresses: %+v", msg.Addresses)
 			go connectToAddresses(msg.Addresses)
 			err = sendAddresses(msg.ID, msg.ID)
 			if err != nil {
@@ -172,13 +174,13 @@ func connectToAddresses(addresses []string) (err error) {
 	wg.Add(len(addresses))
 	didConnect := false
 	for _, addr := range addresses {
-		go func() {
-			connected := connectToAddress(addr)
+		go func(addr2 string) {
+			connected := connectToAddress(addr2)
 			if connected {
 				didConnect = true
 			}
 			wg.Done()
-		}()
+		}(addr)
 	}
 	wg.Wait()
 
@@ -191,6 +193,7 @@ func connectToAddresses(addresses []string) (err error) {
 }
 
 func connectToAddress(addr string) (connected bool) {
+	log.Debugf("connecting to %s", addr)
 	cmd := exec.Command("ipfs", "swarm", "connect", addr, "--encoding", "json")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
